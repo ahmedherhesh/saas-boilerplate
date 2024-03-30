@@ -7,9 +7,11 @@
                 <h5 class="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white text-center mb-4">
                     You Are On The {{ $page.props.subscription.title }} Plan
                 </h5>
-                <p class="font-normal text-gray-700 dark:text-gray-400 mb-3">Ends At : {{ $page.props.subscription.ends_at }}
+                <p class="font-normal text-gray-700 dark:text-gray-400 mb-3">Ends At :
+                    {{ $page.props.subscription.ends_at }}
                 </p>
-                <DangerButton>Unsubscribe</DangerButton>
+                <DangerButton v-if="$page.props.subscription.auto_renewal" @click="unsubscribe">Unsubscribe
+                </DangerButton>
             </div>
 
             <div v-if="!$page.props.auth.subscribed">
@@ -27,5 +29,9 @@
 <script setup>
 import DangerButton from '@/Components/DangerButton.vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
+import { router } from '@inertiajs/vue3';
 
+const unsubscribe = () => {
+    router.post(route('stripe.unsubscribe'));
+}
 </script>

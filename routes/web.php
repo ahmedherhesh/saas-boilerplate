@@ -52,6 +52,7 @@ Route::middleware('auth')->group(function () {
     Route::group(['prefix' => 'stripe', 'as' => 'stripe.', 'controller' => StripeController::class], function () {
         Route::post('checkout', 'checkout')->name('checkout');
         Route::get('success', 'success')->name('success');
+        Route::post('auto-renewal-disable', 'autoRenewalDisable')->name('unsubscribe')->middleware('subscription.checker');
     });
 });
 Route::post('stripe/webhook', [StripeController::class, 'webhook'])->name('stripe.webhook');

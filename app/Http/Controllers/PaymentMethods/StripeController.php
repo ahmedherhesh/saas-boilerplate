@@ -109,12 +109,16 @@ class StripeController extends Controller
         }
         return response('', 200);
     }
-    public function disableAutoRenewal()
+
+    public function autoRenewalDisable()
     {
+
         Stripe::setApiKey(env('STRIPE_SECRET'));
 
+        $subscribed = auth()->user()->subscribed;
+
         // Retrieve the subscription ID
-        $subscriptionId = 'sub_123';
+        $subscriptionId = $subscribed->payment_subscription_id;
 
         // Retrieve the subscription from Stripe
         $subscription = \Stripe\Subscription::retrieve($subscriptionId);
@@ -122,12 +126,11 @@ class StripeController extends Controller
         // Set the cancel_at_period_end parameter to true
         // $subscription->cancel_at_period_end = true;
 
-        // Save the updated subscription
-        $subscription->update(['cancel_at_period_end' => true]);
+        $subscription->update($subscriptionId, ['cancel_at_period_end' => true]);
+        // update in the database
+        $subscribed->update(['auto_renewal' => 0]);
 
-        // OR
-
-        // $subscription->cancel();
+        return back();
     }
     public function success()
     {
