@@ -62,26 +62,26 @@ Route::post('stripe/webhook', [StripeController::class, 'webhook'])->name('strip
 // Route::post('paypal/create', [PayPalController::class,'create']);
 // Route::post('paypal/complete', [PayPalController::class,'complete']);
 
-Route::get('test', function () {
-    $subscription = auth()->user()->subscriptions->first();
-    if ($subscription?->auto_renewal) {
-        Stripe::setApiKey(env('STRIPE_SECRET'));
+// Route::get('test', function () {
+//     $subscription = auth()->user()->subscriptions->first();
+//     if ($subscription?->auto_renewal) {
+//         Stripe::setApiKey(env('STRIPE_SECRET'));
 
-        $customer = \Stripe\Customer::create([
-            'email' => auth()->user()->email,
-            'source' => 'tok_visa', // Stripe token representing a card
-        ]);
+//         $customer = \Stripe\Customer::create([
+//             'email' => auth()->user()->email,
+//             'source' => 'tok_visa', // Stripe token representing a card
+//         ]);
 
-        \Stripe\Subscription::create([
-            'customer' => $customer->id,
-            'items' => [
-                [
-                    'price' => $subscription->payment_plan_id, // Stripe price ID
-                ],
-            ],
-        ]);
-    }
-});
+//         \Stripe\Subscription::create([
+//             'customer' => $customer->id,
+//             'items' => [
+//                 [
+//                     'price' => $subscription->payment_plan_id, // Stripe price ID
+//                 ],
+//             ],
+//         ]);
+//     }
+// });
 
 
 require __DIR__ . '/auth.php';
