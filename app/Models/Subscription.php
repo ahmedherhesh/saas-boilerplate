@@ -10,6 +10,7 @@ class Subscription extends Model
     use HasFactory;
     protected $fillable = [
         'user_id',
+        'plan_id',
         'payment_id',
         'payment_subscription_id',
         'payment_plan_id',
@@ -21,4 +22,8 @@ class Subscription extends Model
         'auto_renewal',
         'ends_at'
     ];
+    public function plan()
+    {
+        return $this->belongsTo(Plan::class);
+    }
 }

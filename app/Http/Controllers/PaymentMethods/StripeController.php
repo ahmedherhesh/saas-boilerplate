@@ -84,6 +84,7 @@ class StripeController extends Controller
                 $plan = Plan::whereStripePriceId($stripePriceId['id'])->firstOrFail();
                 $subscription = Subscription::create([
                     'user_id' => $user->id,
+                    'plan_id' => $plan->id,
                     'title'   => $plan->title,
                     'price'   => $plan->price,
                     'currency'  => $plan->currency,

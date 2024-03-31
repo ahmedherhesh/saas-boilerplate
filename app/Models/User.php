@@ -54,6 +54,11 @@ class User extends Authenticatable
 
     public function editedImagesCount()
     {
-        return $this->hasMany(EditedImageCount::class)->whereSubscriptionId($this->subscribed?->id)->count();
+        $edited_images_count =  $this->hasMany(EditedImageCount::class)->whereSubscriptionId($this->subscribed?->id);
+
+        if ($this->subscribed->plan->period == 'year')
+            $edited_images_count = $edited_images_count->whereMonth('created_at', now()->month);
+
+        return $edited_images_count->count();
     }
 }

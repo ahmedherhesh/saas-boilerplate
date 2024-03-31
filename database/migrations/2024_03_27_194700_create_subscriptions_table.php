@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('subscriptions', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('user_id');
+            $table->unsignedBigInteger('plan_id');
             $table->string('payment_id');
             $table->string('payment_subscription_id');
             $table->string('payment_plan_id');
