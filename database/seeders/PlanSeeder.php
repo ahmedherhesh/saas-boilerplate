@@ -20,7 +20,7 @@ class PlanSeeder extends Seeder
             'price' => 9,
             'currency' => 'usd',
             'stripe_price_id' => 'price_1Oz6fAP2bzFyEkDsoNsvJ4ez',
-            'paypal_plan_id' => 'P-4YA42591RL127190NMYDT5MA',
+            'paypal_plan_id' => 'P-1JH79129675095217MYGJQPQ',
         ]);
         Plan::create([
             'title' => 'Yearly',
@@ -29,7 +29,7 @@ class PlanSeeder extends Seeder
             'price' => 90,
             'currency' => 'usd',
             'stripe_price_id' => 'price_1Oz6mAP2bzFyEkDs8iA7iXNa',
-            'paypal_plan_id' => 'P-7V114398CY485512AMYDT63Q',
+            'paypal_plan_id' => 'P-824604400H831193KMYHND7I',
         ]);
     }
 }
