@@ -5,7 +5,6 @@
 <head>
     <meta charset="utf-8">
     <title>Image Editor in JavaScript | CodingNepal</title>
-    <link rel="stylesheet" href="style.css">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="https://unpkg.com/boxicons@2.1.2/css/boxicons.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css" />
@@ -259,7 +258,7 @@
                 </div>
             </div>
             <div class="preview-img">
-                <img src="image-placeholder.svg" alt="preview-img">
+                <img  alt="preview-img">
             </div>
         </div>
         <div class="controls">

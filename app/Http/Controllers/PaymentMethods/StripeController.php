@@ -21,7 +21,7 @@ class StripeController extends Controller
         $request->validate(['stripe_price_id' => 'required|exists:plans,stripe_price_id']);
         $request->session()->put('email', auth()->user()->email);
 
-        Stripe::setApiKey(env('STRIPE_SECRET'));
+        Stripe::setApiKey(config('stripe.secret'));
 
         $session = Session::create(
             [
@@ -43,10 +43,10 @@ class StripeController extends Controller
     {
         // The library needs to be configured with your account's secret key.
         // Ensure the key is kept out of any version control system you might be using.
-        Stripe::setApiKey(env('STRIPE_SECRET'));
+        Stripe::setApiKey(config('stripe.secret'));
 
         // This is your Stripe CLI webhook secret for testing your endpoint locally.
-        $endpoint_secret = env('STRIPE_WEBHOOK_SECRET');
+        $endpoint_secret = config('stripe.webhook_secret');
 
         $payload = @file_get_contents('php://input');
         $sig_header = $_SERVER['HTTP_STRIPE_SIGNATURE'];
@@ -91,10 +91,10 @@ class StripeController extends Controller
                     'ends_at' => now()->addDays($plan->days)
                 ]);
                 if ($plan->period == 'year') {
-                    RenewSubscriptionInfo::dispatch($user->id)->delay(now()->addMonths(11));
-                    AutoRenewal::dispatch($user->id)->delay(now()->addYear());
+                    RenewSubscriptionInfo::dispatch($user)->delay(now()->addMonths(11));
+                    AutoRenewal::dispatch($user)->delay(now()->addYear());
                 } else {
-                    AutoRenewal::dispatch($user->id)->delay(now()->addDays($plan->days));
+                    AutoRenewal::dispatch($user)->delay(now()->addDays($plan->days));
                 }
                 break;
             case 'checkout.session.completed':

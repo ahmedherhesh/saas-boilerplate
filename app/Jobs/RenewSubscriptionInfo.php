@@ -17,10 +17,10 @@ class RenewSubscriptionInfo implements ShouldQueue
     /**
      * Create a new job instance.
      */
-    private $user_id;
-    public function __construct($user_id)
+    private $user;
+    public function __construct($user)
     {
-       $this->user_id = $user_id;
+       $this->user = $user;
     }
 
     /**
@@ -28,7 +28,7 @@ class RenewSubscriptionInfo implements ShouldQueue
      */
     public function handle(): void
     {
-        $user = User::findOrFail($this->user_id);
+        $user = User::findOrFail($this->user->id);
 
         Mail::send('send-mail', [], function ($massage) use ($user) {
             $massage->to($user->email)->subject('Action Required For Your Subsription In ' . env('APP_NAME'));

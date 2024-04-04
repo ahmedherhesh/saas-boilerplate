@@ -29,48 +29,60 @@ use Stripe\Stripe;
 |
 */
 
-Route::group(['middleware' => 'redirect.if.not.installed'], function () {
-    Route::get('/', function () {
-        return inertia('Welcome', [
-            'canLogin' => Route::has('login'),
-            'canRegister' => Route::has('register'),
-            'laravelVersion' => Application::VERSION,
-            'phpVersion' => PHP_VERSION,
-        ]);
-    });
 
-    Route::get('/dashboard', function () {
-        return inertia('Dashboard');
-    })->middleware(['auth', 'verified'])->name('dashboard');
-
-    Route::middleware('auth')->group(function () {
-        Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
-        Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-        Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
-
-        Route::group(['middleware' => 'subscription.checker'], function () {
-            Route::get('plans', [PlansController::class, 'index'])->name('plans');
-            Route::get('images/editor', [ImageController::class, 'index'])->name('images.editor')->middleware(ImageCountMiddleware::class);
-            Route::post('increment-edited-image', [ImageController::class, 'incrementEditedImageCount'])->name('increment.edited.image');
-        });
-
-        Route::group(['prefix' => 'stripe', 'as' => 'stripe.', 'controller' => StripeController::class], function () {
-            Route::post('checkout', 'checkout')->name('checkout');
-            Route::get('success', 'success')->name('success');
-            Route::post('auto-renewal-disable', 'autoRenewalDisable')->name('unsubscribe')->middleware('subscription.checker');
-        });
-        Route::group(['prefix' => 'paypal', 'as' => 'paypal.', 'controller' => PayPalController::class], function () {
-            Route::post('/', 'index')->name('checkout');
-            Route::put('subscription/continue', 'continue')->name('subscription.continue');
-            Route::post('auto-renewal-disable', 'autoRenewalDisable')->name('unsubscribe')->middleware('subscription.checker');
-        });
-    });
-    Route::post('stripe/webhook', [StripeController::class, 'webhook'])->name('stripe.webhook');
-    Route::post('paypal/webhook', [PayPalController::class, 'webhook'])->name('paypal.webhook');
-
-
-    Route::get('test', function () {
-        AutoRenewal::dispatch(auth()->user());
-    });
-    require __DIR__ . '/auth.php';
+Route::get('/', function () {
+    return inertia('Welcome', [
+        'canLogin' => Route::has('login'),
+        'canRegister' => Route::has('register'),
+        'laravelVersion' => Application::VERSION,
+        'phpVersion' => PHP_VERSION,
+    ]);
 });
+
+Route::get('/dashboard', function () {
+    return inertia('Dashboard');
+})->middleware(['auth', 'verified'])->name('dashboard');
+
+Route::middleware('auth')->group(function () {
+    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+
+    Route::group(['middleware' => 'subscription.checker'], function () {
+        Route::get('plans', [PlansController::class, 'index'])->name('plans');
+        Route::get('images/editor', [ImageController::class, 'index'])->name('images.editor')->middleware(ImageCountMiddleware::class);
+        Route::post('increment-edited-image', [ImageController::class, 'incrementEditedImageCount'])->name('increment.edited.image');
+    });
+
+    Route::group(['prefix' => 'stripe', 'as' => 'stripe.', 'controller' => StripeController::class], function () {
+        Route::post('checkout', 'checkout')->name('checkout');
+        Route::get('success', 'success')->name('success');
+        Route::post('auto-renewal-disable', 'autoRenewalDisable')->name('unsubscribe')->middleware('subscription.checker');
+    });
+    Route::group(['prefix' => 'paypal', 'as' => 'paypal.', 'controller' => PayPalController::class], function () {
+        Route::post('/', 'index')->name('checkout');
+        Route::put('subscription/continue', 'continue')->name('subscription.continue');
+        Route::post('auto-renewal-disable', 'autoRenewalDisable')->name('unsubscribe')->middleware('subscription.checker');
+    });
+});
+Route::post('stripe/webhook', [StripeController::class, 'webhook'])->name('stripe.webhook');
+Route::post('paypal/webhook', [PayPalController::class, 'webhook'])->name('paypal.webhook');
+
+
+Route::get('test', function () {
+    // AutoRenewal::dispatch(auth()->user());
+    $accessToken = 'Basic ' . base64_encode(config('paypal.client_id') . ':' . config('paypal.client_secret'));
+
+    // Set the subscription details
+    $body = [
+        'plan_id' => auth()->user()->subscriptions->first()->payment_plan_id,
+        'subscriber' => [
+            'email_address' => auth()->user()->subscriptions->first()->subscriber_email,
+        ],
+    ];
+    // Create the subscription
+    Http::withHeaders([
+        'Authorization' => $accessToken
+    ])->post(config('paypal.base_url') . '/v1/billing/subscriptions', $body);
+});
+require __DIR__ . '/auth.php';

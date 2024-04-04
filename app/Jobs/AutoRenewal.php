@@ -26,7 +26,7 @@ class AutoRenewal implements ShouldQueue
 
     public function stripeRenew($subscription)
     {
-        Stripe::setApiKey(env('STRIPE_SECRET'));
+        Stripe::setApiKey(config('stripe.secret'));
 
         $customer = \Stripe\Customer::create([
             'email' => $this->user->email,

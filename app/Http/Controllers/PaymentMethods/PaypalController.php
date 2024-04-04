@@ -44,7 +44,7 @@ class PayPalController extends Controller
 
         if ($subscription->plan->period == 'year') {
             RenewSubscriptionInfo::dispatch($subscription->user)->delay(now()->addMonths(11));
-            AutoRenewal::dispatch($subscription->user)->delay(now()->addYear());
+            AutoRenewal::dispatch($subscription->user)->delay(now()->addMinute());
         } else {
             AutoRenewal::dispatch($subscription->user)->delay(now()->addDays($subscription->plan->days));
         }
@@ -112,7 +112,17 @@ class PayPalController extends Controller
                         $last_subscription = Subscription::where('user_id', '!=', null)
                             ->where('subscriber_email', $subscription->subscriber_email)->latest()->first();
 
-                        $subscription->update(['user_id' => $last_subscription->user_id]);
+                        $subscription->update([
+                            'user_id' => $last_subscription->user_id,
+                            'active'  => 1
+                        ]);
+                        
+                        if ($subscription->plan->period == 'year') {
+                            RenewSubscriptionInfo::dispatch($subscription->user)->delay(now()->addMonths(11));
+                            AutoRenewal::dispatch($subscription->user)->delay(now()->addMinute());
+                        } else {
+                            AutoRenewal::dispatch($subscription->user)->delay(now()->addDays($subscription->plan->days));
+                        }
                     }
 
                     // Perform necessary actions for created subscription
@@ -129,7 +139,7 @@ class PayPalController extends Controller
 
                 case 'BILLING.SUBSCRIPTION.UPDATED':
                     // Subscription activated, handle the event
-                    
+
                     // Perform necessary actions for activated subscription
                     // ...
                     break;
@@ -143,7 +153,7 @@ class PayPalController extends Controller
 
                     // Handle other subscription event types as needed
                 case 'PAYMENT.SALE.COMPLETED':
-                    
+
                     // Subscription completed, handle the event
                     break;
                 default:
