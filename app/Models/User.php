@@ -45,11 +45,11 @@ class User extends Authenticatable
 
     public function subscribed()
     {
-        return $this->hasOne(Subscription::class)->where('ends_at', '>', now())->latest();
+        return $this->hasOne(Subscription::class)->whereActive(1)->where('ends_at', '>', now())->latest();
     }
     public function subscriptions()
     {
-        return $this->hasMany(Subscription::class)->latest();
+        return $this->hasMany(Subscription::class)->whereActive(1)->latest();
     }
 
     public function editedImagesCount()

@@ -13,18 +13,21 @@ return new class extends Migration
     {
         Schema::create('subscriptions', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('user_id');
-            $table->unsignedBigInteger('plan_id');
-            $table->string('payment_id');
-            $table->string('payment_subscription_id');
-            $table->string('payment_plan_id');
-            $table->string('payment_method');
-            $table->string('title');
-            $table->double('price');
-            $table->string('currency');
-            $table->integer('images_count');
+            $table->unsignedBigInteger('user_id')->nullable();
+            $table->unsignedBigInteger('plan_id')->nullable();
+            $table->string('payment_id')->nullable();
+            $table->string('payment_subscription_id')->nullable();
+            $table->string('payment_plan_id')->nullable();
+            $table->string('payment_method')->nullable();
+            $table->string('subscriber_email')->nullable();
+            $table->double('fee')->nullable();
+            $table->string('title')->nullable();
+            $table->double('price')->nullable();
+            $table->string('currency')->nullable();
+            $table->integer('images_count')->nullable();
+            $table->boolean('active')->default(0);
             $table->boolean('auto_renewal')->default(1);
-            $table->timestamp('ends_at');
+            $table->timestamp('ends_at')->nullable();
             $table->timestamps();
         });
     }

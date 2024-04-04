@@ -8,16 +8,11 @@ use App\Jobs\RenewSubscriptionInfo;
 use App\Models\Plan;
 use App\Models\Subscription;
 use App\Models\User;
-use Carbon\Carbon;
-use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Log;
 use Stripe\Stripe;
 use Stripe\Webhook;
-use Stripe\Customer;
 use Stripe\Checkout\Session;
-use Stripe\StripeClient;
 
 class StripeController extends Controller
 {
@@ -78,7 +73,6 @@ class StripeController extends Controller
                 break;
             case 'invoice.paid':
                 $paymentIntent = $event->data->object;
-                // Log::alert($paymentIntent);
                 $stripePriceId = $paymentIntent->lines->data[0]['plan'];
                 $user = User::whereEmail($request->session()->get('email') ?? $paymentIntent->customer_email)->firstOrFail();
                 $plan = Plan::whereStripePriceId($stripePriceId['id'])->firstOrFail();
@@ -93,17 +87,18 @@ class StripeController extends Controller
                     'payment_subscription_id' => $paymentIntent->subscription,
                     'payment_plan_id' => $plan->stripe_price_id,
                     'payment_id' =>  $paymentIntent->id,
+                    'active' => 1,
                     'ends_at' => now()->addDays($plan->days)
                 ]);
                 if ($plan->period == 'year') {
                     RenewSubscriptionInfo::dispatch($user->id)->delay(now()->addMonths(11));
                     AutoRenewal::dispatch($user->id)->delay(now()->addYear());
                 } else {
-                    AutoRenewal::dispatch($user->id)->delay(now()->addMonths(1));
+                    AutoRenewal::dispatch($user->id)->delay(now()->addDays($plan->days));
                 }
                 break;
             case 'checkout.session.completed':
-                Log::alert($event->data->object);
+
                 break;
             default:
                 echo 'Received unknown event type ' . $event->type;
@@ -114,20 +109,23 @@ class StripeController extends Controller
     public function autoRenewalDisable()
     {
 
-        Stripe::setApiKey(env('STRIPE_SECRET'));
-
         $subscribed = auth()->user()->subscribed;
+        if ($subscribed->payment_method == 'stripe') {
 
-        // Retrieve the subscription ID
-        $subscriptionId = $subscribed->payment_subscription_id;
+            Stripe::setApiKey(env('STRIPE_SECRET'));
 
-        // Retrieve the subscription from Stripe
-        $subscription = \Stripe\Subscription::retrieve($subscriptionId);
+            // Retrieve the subscription ID
+            $subscriptionId = $subscribed->payment_subscription_id;
 
-        // Set the cancel_at_period_end parameter to true
-        // $subscription->cancel_at_period_end = true;
+            // Retrieve the subscription from Stripe
+            $subscription = \Stripe\Subscription::retrieve($subscriptionId);
 
-        $subscription->update($subscriptionId, ['cancel_at_period_end' => true]);
+            // Set the cancel_at_period_end parameter to true
+            // $subscription->cancel_at_period_end = true;
+
+            $subscription->update($subscriptionId, ['cancel_at_period_end' => true]);
+        }
+
         // update in the database
         $subscribed->update(['auto_renewal' => 0]);
 

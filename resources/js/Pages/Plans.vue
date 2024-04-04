@@ -4,31 +4,24 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import Modal from '@/Components/Modal.vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
 import SecondaryButton from '@/Components/SecondaryButton.vue';
-import { router } from '@inertiajs/vue3'
 import { ref } from 'vue';
 
 defineProps({
     plans: Array
 })
 const stripePriceId = ref(0);
+const paypalPlanId = ref(0);
 const showPaymentModal = ref(false)
 const openPaymentModal = (e) => {
+    paypalPlanId.value = e.target.dataset.paypalPlanId;
     stripePriceId.value = e.target.dataset.stripePriceId;
     showPaymentModal.value = true
 }
 
-const openPaypalModal = () => {
-    showPaypalModal.value = true
-};
 const closePaymentMethodsModals = () => {
-    showPaypalModal.value = false
-    showStripeModal.value = false
     showPaymentModal.value = false
 };
-const showStripeModal = ref(false)
-const closeStripeModal = ref(false)
-const showPaypalModal = ref(false)
-const closePaypalModal = ref(false)
+
 </script>
 <template>
 
@@ -47,7 +40,8 @@ const closePaypalModal = ref(false)
                     <p class="mb-3 font-normal text-gray-700 dark:text-gray-400">{{ plan.price }} {{ plan.currency }}
                     </p>
 
-                    <PrimaryButton @click="openPaymentModal" :data-stripe-price-id="plan.stripe_price_id">
+                    <PrimaryButton @click="openPaymentModal" :data-stripe-price-id="plan.stripe_price_id"
+                        :data-paypal-plan-id="plan.paypal_plan_id">
                         Pay
                         <svg class="rtl:rotate-180 w-3.5 h-3.5 ms-2" aria-hidden="true"
                             xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 10">
@@ -66,11 +60,16 @@ const closePaypalModal = ref(false)
                 Choose Your Favorite Payment
             </h2>
             <div class="payment-methods flex justify-around">
-                <SecondaryButton @click="openPaypalModal">
-                    <img src='/imgs/paypal.png' alt="" width="200" height="150">
-                </SecondaryButton>
-                <form :action="route('stripe.checkout') + '?stripe_price_id=' + stripePriceId" method="POST">
+                <form :action="route('paypal.checkout')" method="POST">
                     <input type="hidden" name="_token" :value="$page.props.csrf_token">
+                    <input type="hidden" name="paypal_plan_id" :value="paypalPlanId">
+                    <SecondaryButton type="submit">
+                        <img src='/imgs/paypal.png' alt="" width="200" height="150">
+                    </SecondaryButton>
+                </form>
+                <form :action="route('stripe.checkout')" method="POST">
+                    <input type="hidden" name="_token" :value="$page.props.csrf_token">
+                    <input type="hidden" name="stripe_price_id" :value="stripePriceId">
                     <SecondaryButton type="submit">
                         <img src='/imgs/stripe.png' alt="" width="200" height="150">
                     </SecondaryButton>

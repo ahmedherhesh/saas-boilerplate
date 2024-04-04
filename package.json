@@ -18,6 +18,7 @@
         "vue": "^3.4.0"
     },
     "dependencies": {
+        "@paypal/paypal-js": "^8.0.4",
         "@pqina/pintura": "^8.77.0",
         "@pqina/vue-pintura": "^9.0.1",
         "vue-clip": "^1.0.0"

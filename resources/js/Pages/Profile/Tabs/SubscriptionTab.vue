@@ -10,7 +10,8 @@
                 <p class="font-normal text-gray-700 dark:text-gray-400 mb-3">Ends At :
                     {{ $page.props.subscription.ends_at }}
                 </p>
-                <DangerButton v-if="$page.props.subscription.auto_renewal" @click="unsubscribe">Unsubscribe
+                <DangerButton v-if="$page.props.subscription.auto_renewal"
+                    @click="unsubscribe($page.props.subscription.payment_method)">Unsubscribe
                 </DangerButton>
             </div>
 
@@ -19,7 +20,9 @@
                     You Don't Have Any Plan
                 </h5>
                 <div class="text-center">
-                    <PrimaryButton>Click To Subscribe</PrimaryButton>
+                    <PrimaryButton>
+                        <Link :href="route('plans')">Click To Subscribe</Link>
+                    </PrimaryButton>
                 </div>
             </div>
         </div>
@@ -30,8 +33,8 @@
 import DangerButton from '@/Components/DangerButton.vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
 import { router } from '@inertiajs/vue3';
-
-const unsubscribe = () => {
-    router.post(route('stripe.unsubscribe'));
+import { Link } from '@inertiajs/vue3';
+const unsubscribe = (payment_method) => {
+    router.post(route(`${payment_method}.unsubscribe`));
 }
 </script>

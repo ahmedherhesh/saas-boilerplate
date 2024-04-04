@@ -6,11 +6,15 @@ use App\Http\Controllers\PaymentMethods\PayPalController;
 use App\Http\Controllers\PlansController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Middleware\ImageCountMiddleware;
+use App\Jobs\AutoRenewal;
 use App\Jobs\RenewSubscriptionInfo;
 use Carbon\Carbon;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Application;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Route;
 use Stripe\Stripe;
 
@@ -54,35 +58,17 @@ Route::middleware('auth')->group(function () {
         Route::get('success', 'success')->name('success');
         Route::post('auto-renewal-disable', 'autoRenewalDisable')->name('unsubscribe')->middleware('subscription.checker');
     });
+    Route::group(['prefix' => 'paypal', 'as' => 'paypal.', 'controller' => PayPalController::class], function () {
+        Route::post('/', 'index')->name('checkout');
+        Route::put('subscription/continue', 'continue')->name('subscription.continue');
+        Route::post('auto-renewal-disable', 'autoRenewalDisable')->name('unsubscribe')->middleware('subscription.checker');
+    });
 });
 Route::post('stripe/webhook', [StripeController::class, 'webhook'])->name('stripe.webhook');
+Route::post('paypal/webhook', [PayPalController::class, 'webhook'])->name('paypal.webhook');
 
 
-
-// Route::get('paypal/', [PayPalController::class,'index']);
-// Route::post('paypal/create', [PayPalController::class,'create']);
-// Route::post('paypal/complete', [PayPalController::class,'complete']);
-
-// Route::get('test', function () {
-//     $subscription = auth()->user()->subscriptions->first();
-//     if ($subscription?->auto_renewal) {
-//         Stripe::setApiKey(env('STRIPE_SECRET'));
-
-//         $customer = \Stripe\Customer::create([
-//             'email' => auth()->user()->email,
-//             'source' => 'tok_visa', // Stripe token representing a card
-//         ]);
-
-//         \Stripe\Subscription::create([
-//             'customer' => $customer->id,
-//             'items' => [
-//                 [
-//                     'price' => $subscription->payment_plan_id, // Stripe price ID
-//                 ],
-//             ],
-//         ]);
-//     }
-// });
-
-
+Route::get('test', function () {
+   AutoRenewal::dispatch(auth()->user());
+});
 require __DIR__ . '/auth.php';

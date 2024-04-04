@@ -15,15 +15,21 @@ class Subscription extends Model
         'payment_subscription_id',
         'payment_plan_id',
         'payment_method',
+        'subscriber_email',
+        'fee',
         'title',
         'price',
         'currency',
         'images_count',
+        'active',
         'auto_renewal',
         'ends_at'
     ];
     public function plan()
     {
         return $this->belongsTo(Plan::class);
+    }
+    public function user(){
+        return $this->belongsTo(User::class);
     }
 }
